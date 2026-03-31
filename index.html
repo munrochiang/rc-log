@@ -953,7 +953,7 @@ function renderRaceCards(rankChanges) {
     else if (ch < 0) { chCls = 'down'; chTxt = `▼${Math.abs(ch)}`; }
     return `
     <div class="athlete-card ${a.starred ? 'starred' : ''} ${pickedBibs.has(a.bib) ? 'picked' : ''}"
-         data-bib="${a.bib}" onclick="onTapAthlete(${a.bib})">
+         data-bib="${a.bib}" onclick="onTapAthlete('${a.bib}')">
       <div class="rank ${rc}">${rank}</div>
       <div class="rank-change ${chCls}">${chTxt}</div>
       <div class="athlete-info">
