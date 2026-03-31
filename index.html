@@ -418,7 +418,7 @@ function addGroup() {
   const el = document.getElementById('inp-group-name');
   const name = el.value.trim();
   if (!name) return;
-  const g = { id: newId(), name, athletes: [], sprintLaps: [0], currentSprintIdx: 0, history: [] };
+  const g = { id: newId(), name, athletes: [], sprintLaps: [11,10,9,8,7,6,5,4,3,2,1,0], currentSprintIdx: 0, history: [] };
   groups.push(g);
   el.value = '';
   expandedGroupId = g.id; // auto-expand newly created group
