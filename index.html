@@ -498,6 +498,11 @@ function renderGroupsList() {
 }
 
 function renderGroupBody(g) {
+  const totalLaps = g.raceDistance / g.lapLength;
+  const lapOk = Number.isInteger(totalLaps);
+  const distOptions = [3000, 5000];
+  const isCustom = !distOptions.includes(g.raceDistance);
+
   const athleteRows = g.athletes.map((a, i) => `
     <div class="athlete-setup-row ${a.starred ? 'starred' : ''}">
       <span class="star-toggle" onclick="toggleAthleteStar('${g.id}', ${i})">${a.starred ? '★' : '☆'}</span>
@@ -520,11 +525,6 @@ function renderGroupBody(g) {
   } else {
     sprintHtml = '<div style="font-size:13px;color:var(--text-dim)">請先設定有效的比賽距離</div>';
   }
-
-  const totalLaps = g.raceDistance / g.lapLength;
-  const lapOk = Number.isInteger(totalLaps);
-  const distOptions = [3000, 5000];
-  const isCustom = !distOptions.includes(g.raceDistance);
 
   const distHtml = `
     <div class="sub-title">比賽距離設定</div>
