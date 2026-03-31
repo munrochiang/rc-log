@@ -89,6 +89,7 @@
   .setup-section h2 { font-size: 15px; color: var(--text-dim); margin-bottom: 12px; }
 
   .setup-form { display: flex; gap: 8px; flex-wrap: wrap; }
+  .setup-form .inp-full { flex: 1 1 100%; }
   .setup-form input {
     flex: 1;
     min-width: 100px;
@@ -110,7 +111,12 @@
     border-radius: var(--radius);
     border: 1.5px solid rgba(255,255,255,0.08);
     overflow: hidden;
+    transition: border-color 0.15s;
   }
+  .group-card.selected { border-color: var(--primary); }
+  .group-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s; }
+  .group-card.selected .group-radio { border-color: var(--primary); background: var(--primary); }
+  .group-card.selected .group-radio::after { content: ''; display: block; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
   .group-header {
     display: flex;
     align-items: center;
@@ -378,7 +384,7 @@
     <h1>🏁</h1>
     <h2>📁 新增組別</h2>
     <div class="setup-form">
-      <input id="inp-group-name" type="text" placeholder="組別名稱（例：國小三年級男子組 3000m）">
+      <input id="inp-group-name" type="text" placeholder="例：國小三年級男子組 3000m 計分賽" class="inp-full">
       <button class="btn btn-green" onclick="addGroup()">＋ 新增組別</button>
     </div>
   </div>
@@ -387,6 +393,7 @@
 
   <div style="height: 80px"></div>
   <div class="start-bar">
+    <div id="start-group-label" style="font-size:13px;color:var(--text-dim);margin-bottom:6px;text-align:center;"></div>
     <button class="btn btn-primary" onclick="startRace()">▶ 開始比賽</button>
   </div>
 </div>
@@ -432,6 +439,7 @@
 let groups = [];
 let currentGroupId = null;
 let expandedGroupId = null;
+let selectedGroupId = null;
 let roundPicks = [];
 let commitTimer = null;
 const COMMIT_DELAY = 2000;
@@ -461,19 +469,25 @@ function addGroup() {
   groups.push(g);
   el.value = '';
   expandedGroupId = g.id; // auto-expand newly created group
+  selectedGroupId = g.id; // auto-select newly created group
   renderGroupsList();
+  updateStartBar();
 }
 
 function deleteGroup(id) {
   if (!confirm('確定刪除此組別？')) return;
   groups = groups.filter(g => g.id !== id);
   if (expandedGroupId === id) expandedGroupId = null;
+  if (selectedGroupId === id) selectedGroupId = groups.length > 0 ? groups[0].id : null;
   renderGroupsList();
+  updateStartBar();
 }
 
 function toggleGroup(id) {
   expandedGroupId = expandedGroupId === id ? null : id;
+  selectedGroupId = id; // selecting a group to expand also marks it for race
   renderGroupsList();
+  updateStartBar();
 }
 
 function renderGroupsList() {
@@ -484,9 +498,11 @@ function renderGroupsList() {
   }
   container.innerHTML = groups.map(g => {
     const expanded = expandedGroupId === g.id;
+    const selected = selectedGroupId === g.id;
     return `
-    <div class="group-card" id="gc-${g.id}">
+    <div class="group-card${selected ? ' selected' : ''}" id="gc-${g.id}">
       <div class="group-header" onclick="toggleGroup('${g.id}')">
+        <div class="group-radio"></div>
         <span class="group-name">${esc(g.name)}</span>
         <span class="group-meta">${g.athletes.length} 人｜${g.raceDistance}m</span>
         <button class="btn-group-delete" onclick="event.stopPropagation();deleteGroup('${g.id}')">✕</button>
@@ -640,8 +656,16 @@ function toggleSprintLap(groupId, lap) {
   renderGroupsList();
 }
 
+function updateStartBar() {
+  const lbl = document.getElementById('start-group-label');
+  if (!lbl) return;
+  const g = groups.find(g => g.id === selectedGroupId);
+  lbl.textContent = g ? '出賽組別：' + g.name : (groups.length > 0 ? '點選組別以選定出賽組別' : '');
+}
+
 function startRace() {
   if (groups.length === 0) { alert('請新增至少一個組別'); return; }
+  if (!selectedGroupId) selectedGroupId = groups[0].id;
   // Reset race state for all groups
   groups.forEach(g => {
     g.athletes.forEach(a => a.score = 0);
@@ -649,7 +673,7 @@ function startRace() {
     g.currentSprintIdx = 0;
     g.history = [];
   });
-  currentGroupId = groups[0].id;
+  currentGroupId = selectedGroupId;
   roundPicks = [];
   clearTimeout(commitTimer);
   document.getElementById('setup-screen').classList.remove('active');
