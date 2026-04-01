@@ -993,7 +993,6 @@ function sortAndRender() {
   if (g) g.athletes.sort((a, b) => b.score - a.score || parseInt(a.bib) - parseInt(b.bib));
   renderRaceCards({});
 }
-}
 
 function renderRaceCards(rankChanges) {
   const g = curGroup();
