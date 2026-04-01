@@ -997,15 +997,29 @@ function prevSprintLap() {
 
 function nextSprintLap() {
   clearTimeout(commitTimer);
-  if (roundPicks.length > 0) commitRound(false);
-  // Just navigate forward — never deduct prevRoundPicks here, only onTapAthlete does that
-  prevRoundPicks = [];
   const g = curGroup();
-  if (g && g.currentSprintIdx < g.sprintLaps.length - 1) g.currentSprintIdx++;
+  if (!g) return;
+  if (roundPicks.length > 0) {
+    // Re-scored a past lap: commit, restore intermediates, jump to progress
+    commitRound(false);
+    drainForwardStack(g);
+    g.currentSprintIdx = g.progressSprintIdx ?? g.currentSprintIdx;
+  } else if (forwardStack.length > 0) {
+    // Navigate forward without re-scoring: restore one step
+    const h = forwardStack.shift();
+    for (const p of h.picks) {
+      const a = g.athletes.find(x => x.bib === p.bib);
+      if (a) a.score += p.points;
+    }
+    g.history.push(h);
+    if (g.history.length > MAX_UNDO) g.history.shift();
+    g.currentSprintIdx = h.sprintIdx + 1;
+  }
+  // If forwardStack empty and at/beyond progress: blocked (next button disabled)
   roundPicks = [];
   updateSprintBar();
   renderRoundPicks();
-  renderRaceCards({});
+  animatedSortAndRender();
 }
 
 function undoLastPick() {
