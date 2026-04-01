@@ -505,7 +505,7 @@
     <span class="lap-num" id="lap-num">—</span>
     <span class="lap-type normal" id="lap-type">得分圈</span>
     <span class="sprint-info" id="sprint-info">依進線順序點選得分選手</span>
-    <button class="btn btn-nav-lap" onclick="prevSprintLap()">◂ 上一圈</button>
+    <button id="btn-prev-lap" class="btn btn-nav-lap" onclick="prevSprintLap()">◂ 上一圈</button>
     <button id="btn-next-lap" class="btn btn-nav-lap" onclick="nextSprintLap()">下一圈 ▸</button>
   </div>
 
@@ -873,6 +873,12 @@ function updateSprintBar() {
     nextBtn.disabled = forwardStack.length === 0 && roundPicks.length === 0 && atProgress;
     nextBtn.style.opacity = nextBtn.disabled ? '0.35' : '';
   }
+  // Disable prev button when nothing to go back to
+  const prevBtn = document.getElementById('btn-prev-lap');
+  if (prevBtn && g) {
+    prevBtn.disabled = g.history.length === 0 && forwardStack.length === 0;
+    prevBtn.style.opacity = prevBtn.disabled ? '0.35' : '';
+  }
 }
 
 function renderRoundPicks() {
@@ -937,22 +943,28 @@ function commitRound(autoAdvance) {
   bar.style.transition = 'none';
   bar.style.width = '0%';
   if (autoAdvance) {
+    const committedIdx = g.currentSprintIdx;
     const progress = g.progressSprintIdx ?? 0;
-    const atProgress = g.currentSprintIdx >= progress;
-    drainForwardStack(g);
+    const atProgress = committedIdx >= progress;
+    drainForwardStack(g, committedIdx);
     if (atProgress) {
       g.progressSprintIdx = Math.min(progress + 1, g.sprintLaps.length - 1);
     }
-    g.currentSprintIdx = g.progressSprintIdx ?? g.currentSprintIdx;
+    g.currentSprintIdx = g.progressSprintIdx ?? committedIdx;
   }
   renderRoundPicks();
   updateSprintBar();
   animatedSortAndRender();
 }
 
-function drainForwardStack(g) {
+function drainForwardStack(g, fromIdx = -1) {
   while (forwardStack.length > 0) {
-    const h = forwardStack.shift();
+    const h = forwardStack[0];
+    if (h.sprintIdx <= fromIdx) {
+      forwardStack.shift(); // discard — being replaced by the new commit
+      continue;
+    }
+    forwardStack.shift();
     for (const p of h.picks) {
       const a = g.athletes.find(x => x.bib === p.bib);
       if (a) a.score += p.points;
