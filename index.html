@@ -866,22 +866,16 @@ function updateSprintBar() {
 
 function renderRoundPicks() {
   const c = document.getElementById('round-picks');
-  if (roundPicks.length === 0 && prevRoundPicks.length === 0) {
+  if (roundPicks.length === 0) {
     c.innerHTML = '<span class="round-picks-empty">👆 依進線順序點選得分選手</span>';
     return;
   }
   const g = curGroup();
-  // Show stale (prev lap) picks with strikethrough, then current picks
-  const staleTags = prevRoundPicks.map(p => {
-    const a = g.athletes.find(x => x.bib === p.bib);
-    return `<span class="round-pick-tag stale">#${p.bib} ${esc(a?.name || '')} +${p.points}</span>`;
-  }).join('');
-  const currentTags = roundPicks.map(p => {
+  c.innerHTML = roundPicks.map(p => {
     const a = g.athletes.find(x => x.bib === p.bib);
     const cls = p.points === 3 ? 'pts3' : p.points === 2 ? 'pts2' : 'pts1';
     return `<span class="round-pick-tag ${cls}">#${p.bib} ${esc(a?.name || '')} +${p.points}</span>`;
   }).join('');
-  c.innerHTML = staleTags + currentTags;
 }
 
 function onTapAthlete(bib) {
