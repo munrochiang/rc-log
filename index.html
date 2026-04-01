@@ -979,15 +979,8 @@ function prevSprintLap() {
 function nextSprintLap() {
   clearTimeout(commitTimer);
   if (roundPicks.length > 0) commitRound(false);
-  // If user skips forward without confirming prev-lap stale picks, deduct them now
-  if (prevRoundPicks.length > 0) {
-    const g2 = curGroup();
-    for (const p of prevRoundPicks) {
-      const a = g2.athletes.find(x => x.bib === p.bib);
-      if (a) a.score -= p.points;
-    }
-    prevRoundPicks = [];
-  }
+  // Just navigate forward — never deduct prevRoundPicks here, only onTapAthlete does that
+  prevRoundPicks = [];
   const g = curGroup();
   if (g && g.currentSprintIdx < g.sprintLaps.length - 1) g.currentSprintIdx++;
   roundPicks = [];
