@@ -506,7 +506,7 @@
     <span class="lap-type normal" id="lap-type">得分圈</span>
     <span class="sprint-info" id="sprint-info">依進線順序點選得分選手</span>
     <button class="btn btn-nav-lap" onclick="prevSprintLap()">◂ 上一圈</button>
-    <button class="btn btn-nav-lap" onclick="nextSprintLap()">下一圈 ▸</button>
+    <button id="btn-next-lap" class="btn btn-nav-lap" onclick="nextSprintLap()">下一圈 ▸</button>
   </div>
 
   <div id="commit-timer-bar" class="commit-timer-bar"></div>
@@ -527,7 +527,7 @@ let currentGroupId = null;
 let expandedGroupId = null;
 let selectedGroupId = null;
 let roundPicks = [];
-let prevRoundPicks = []; // picks from the last popped history entry (not yet deducted)
+let forwardStack = []; // [{picks, sprintIdx}, ...] rounds popped during back-nav (already deducted)
 let commitTimer = null;
 const COMMIT_DELAY = 2000;
 const MAX_UNDO = 20;
@@ -785,12 +785,15 @@ function startRace() {
     g.athletes.forEach(a => a.score = 0);
     g.sprintLaps.sort((a, b) => b - a);
     g.currentSprintIdx = 0;
+    g.progressSprintIdx = 0;
     g.history = [];
   });
   currentGroupId = selectedGroupId;
   roundPicks = [];
-  prevRoundPicks = [];
+  forwardStack = [];
   clearTimeout(commitTimer);
+  // Initialise progressSprintIdx on each group
+  groups.forEach(g => { g.progressSprintIdx = 0; });
   document.getElementById('setup-screen').classList.remove('active');
   document.getElementById('race-screen').classList.add('active');
   renderGroupSelector();
@@ -829,7 +832,7 @@ function switchGroup(id) {
   if (roundPicks.length > 0) commitRound(false); // commit silently without auto-advance
   currentGroupId = id;
   roundPicks = [];
-  prevRoundPicks = [];
+  forwardStack = [];
   const bar = document.getElementById('commit-timer-bar');
   bar.style.transition = 'none';
   bar.style.width = '0%';
@@ -862,6 +865,14 @@ function updateSprintBar() {
   document.getElementById('sprint-info').innerHTML = left > 0
     ? `還可選 <strong>${left}</strong> 人`
     : `<strong>已選滿 ✓</strong>`;
+  // Disable next button when at/beyond progress with nothing to restore
+  const g = curGroup();
+  const nextBtn = document.getElementById('btn-next-lap');
+  if (nextBtn && g) {
+    const atProgress = g.currentSprintIdx >= (g.progressSprintIdx ?? g.currentSprintIdx);
+    nextBtn.disabled = forwardStack.length === 0 && roundPicks.length === 0 && atProgress;
+    nextBtn.style.opacity = nextBtn.disabled ? '0.35' : '';
+  }
 }
 
 function renderRoundPicks() {
@@ -881,15 +892,7 @@ function renderRoundPicks() {
 function onTapAthlete(bib) {
   if (roundPicks.length >= maxPicks()) return;
   if (roundPicks.some(p => p.bib === bib)) return;
-  // First tap after going back a lap: deduct the stale picks now
-  if (prevRoundPicks.length > 0) {
-    const g2 = curGroup();
-    for (const p of prevRoundPicks) {
-      const a = g2.athletes.find(x => x.bib === p.bib);
-      if (a) a.score -= p.points;
-    }
-    prevRoundPicks = [];
-  }
+  // forwardStack items are already deducted from scores; just proceed with new picks
   const pts = ptsForPick(roundPicks.length);
   const g = curGroup();
   const a = g.athletes.find(x => x.bib === bib);
@@ -933,10 +936,30 @@ function commitRound(autoAdvance) {
   const bar = document.getElementById('commit-timer-bar');
   bar.style.transition = 'none';
   bar.style.width = '0%';
-  if (autoAdvance && g.currentSprintIdx < g.sprintLaps.length - 1) g.currentSprintIdx++;
+  if (autoAdvance) {
+    const progress = g.progressSprintIdx ?? 0;
+    const atProgress = g.currentSprintIdx >= progress;
+    drainForwardStack(g);
+    if (atProgress) {
+      g.progressSprintIdx = Math.min(progress + 1, g.sprintLaps.length - 1);
+    }
+    g.currentSprintIdx = g.progressSprintIdx ?? g.currentSprintIdx;
+  }
   renderRoundPicks();
   updateSprintBar();
   animatedSortAndRender();
+}
+
+function drainForwardStack(g) {
+  while (forwardStack.length > 0) {
+    const h = forwardStack.shift();
+    for (const p of h.picks) {
+      const a = g.athletes.find(x => x.bib === p.bib);
+      if (a) a.score += p.points;
+    }
+    g.history.push(h);
+    if (g.history.length > MAX_UNDO) g.history.shift();
+  }
 }
 
 function prevSprintLap() {
@@ -952,13 +975,15 @@ function prevSprintLap() {
     if (a) a.score -= p.points;
   }
   roundPicks = [];
-  // Also discard any stale picks from a previous prev-lap press
-  prevRoundPicks = [];
-  // Pop the last committed round — store picks as stale (don't deduct yet)
+  // Pop last history entry, deduct its scores, push to FRONT of forwardStack
   if (g.history.length > 0) {
     const h = g.history.pop();
     if (h.type === 'round') {
-      prevRoundPicks = [...h.picks];
+      for (const p of h.picks) {
+        const a = g.athletes.find(x => x.bib === p.bib);
+        if (a) a.score -= p.points;
+      }
+      forwardStack.unshift(h);
       g.currentSprintIdx = h.sprintIdx;
     }
   } else if (g.currentSprintIdx > 0) {
