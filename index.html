@@ -335,7 +335,8 @@
     grid-auto-rows: 1fr;
     gap: 3px;
     padding: 3px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     container-type: size;
     container-name: race-list;
   }
@@ -425,17 +426,15 @@
   }
   .btn-hint { background: transparent; border: 1.5px solid rgba(255,255,255,0.2); color: var(--text-dim); padding: 8px 12px; font-size: 14px; }
 
-  /* ══ Race Screen: full-height layout with safe-area fallback ══ */
+  /* ══ Race Screen: viewport-constrained, only race-list scrolls ══ */
   #race-screen.active {
     display: flex;
     flex-direction: column;
-    /* Use dvh so browser chrome is already excluded; add env() bottom inset for notch/home-bar */
-    min-height: calc(100dvh - env(safe-area-inset-bottom, 0px));
-    max-height: calc(100dvh - env(safe-area-inset-bottom, 0px));
-    overflow: auto;
-    /* padding-bottom reserves space even when env() is 0 (e.g. Android Chrome with auto-hiding bar) */
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 40px);
+    height: 100dvh;
+    /* iOS home-bar / Android notch safe area */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     box-sizing: border-box;
+    overflow: hidden;
   }
   /* Compact chrome elements inside race screen */
   #race-screen .header { padding: 6px 16px; }
@@ -447,19 +446,19 @@
   #race-screen .round-picks { padding: 4px 12px; min-height: 30px; }
   /* Compact athlete cards when inside the race grid */
   .race-list .athlete-card { padding: 2px 8px; gap: 6px; border-radius: 7px; align-items: center; }
-  .race-list .rank { font-size: clamp(10px, calc(38cqh / var(--row-count, 13)), 24px); min-width: clamp(14px, calc(38cqh / var(--row-count, 13)), 24px); line-height: 1; }
-  .race-list .rank.top1 { font-size: clamp(11px, calc(42cqh / var(--row-count, 13)), 26px); }
-  .race-list .rank.top2, .race-list .rank.top3 { font-size: clamp(10px, calc(40cqh / var(--row-count, 13)), 25px); }
+  .race-list .rank { font-size: clamp(10px, calc(45cqh / var(--row-count, 13)), 28px); min-width: clamp(14px, calc(45cqh / var(--row-count, 13)), 28px); line-height: 1; }
+  .race-list .rank.top1 { font-size: clamp(11px, calc(50cqh / var(--row-count, 13)), 30px); }
+  .race-list .rank.top2, .race-list .rank.top3 { font-size: clamp(10px, calc(47cqh / var(--row-count, 13)), 29px); }
   .race-list .rank-change { display: none; }
-  /* two-line athlete-info: bib on top, name below */
+  /* single-line athlete-info: bib then name */
   .race-list .athlete-info { display: flex; flex-direction: row; align-items: center; gap: 6px; min-width: 0; flex-wrap: nowrap; }
   .race-list .athlete-info .bib-line { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .race-list .athlete-info .name-line { flex-shrink: 0; }
-  .race-list .athlete-info .bib { font-size: clamp(12px, calc(55cqh / var(--row-count, 13)), 40px); font-weight: 800; background: none; padding: 0; border-radius: 0; letter-spacing: 0.5px; }
-  .race-list .athlete-card.starred .star-icon { font-size: clamp(9px, calc(35cqh / var(--row-count, 13)), 20px); }
-  .race-list .athlete-info .name { font-size: clamp(12px, calc(55cqh / var(--row-count, 13)), 40px); white-space: nowrap; overflow: visible; text-overflow: unset; font-weight: 600; }
-  .race-list .score { font-size: clamp(13px, calc(65cqh / var(--row-count, 13)), 38px); min-width: 26px; line-height: 1; }
-  .race-list .score-unit { font-size: clamp(8px, calc(24cqh / var(--row-count, 13)), 14px); }
+  .race-list .athlete-info .bib { font-size: clamp(13px, calc(65cqh / var(--row-count, 13)), 44px); font-weight: 800; background: none; padding: 0; border-radius: 0; letter-spacing: 0.5px; }
+  .race-list .athlete-card.starred .star-icon { font-size: clamp(9px, calc(40cqh / var(--row-count, 13)), 24px); }
+  .race-list .athlete-info .name { font-size: clamp(13px, calc(65cqh / var(--row-count, 13)), 44px); white-space: nowrap; overflow: visible; text-overflow: unset; font-weight: 600; }
+  .race-list .score { font-size: clamp(14px, calc(70cqh / var(--row-count, 13)), 46px); min-width: 26px; line-height: 1; }
+  .race-list .score-unit { font-size: clamp(8px, calc(28cqh / var(--row-count, 13)), 16px); }
 </style>
   <script data-goatcounter="https://munrochiang.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
