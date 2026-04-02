@@ -504,16 +504,6 @@
 
 <!-- ════════════ RACE SCREEN ════════════ -->
 <div id="race-screen" class="screen">
-  <div class="header">
-    <div class="header-actions">
-      <button class="btn btn-hint" onclick="showHint()">ℹ</button>
-      <button class="btn btn-outline" onclick="backToSetup()">⚙</button>
-    </div>
-  </div>
-
-  <div class="group-selector-bar">
-    <select id="group-select" onchange="switchGroup(this.value)"></select>
-  </div>
 
   <div class="sprint-bar" id="sprint-bar">
     <span class="lap-label">得分圈</span>
@@ -522,6 +512,7 @@
     <span class="sprint-info" id="sprint-info">依進線順序點選得分選手</span>
     <button id="btn-prev-lap" class="btn btn-nav-lap" onclick="prevSprintLap()">◂ 上一圈</button>
     <button id="btn-next-lap" class="btn btn-nav-lap" onclick="nextSprintLap()">下一圈 ▸</button>
+    <button class="btn btn-outline" onclick="backToSetup()">⚙️</button>
   </div>
 
   <div id="commit-timer-bar" class="commit-timer-bar"></div>
@@ -811,7 +802,6 @@ function startRace() {
   groups.forEach(g => { g.progressSprintIdx = 0; });
   document.getElementById('setup-screen').classList.remove('active');
   document.getElementById('race-screen').classList.add('active');
-  renderGroupSelector();
   updateSprintBar();
   sortAndRender();
   showHint();
