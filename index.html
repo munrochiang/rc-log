@@ -716,7 +716,7 @@ function renderGroupBody(g) {
     <div style="margin-bottom:10px">
       <div style="font-size:13px;color:var(--text-dim);margin-bottom:6px">單圈長度</div>
       <div style="display:flex;align-items:center;gap:8px">
-        <input type="number" id="laplen-${g.id}" value="${g.lapLength}" inputmode="numeric"
+        <input type="number" id="laplen-${g.id}" value="${g.lapLength || ''}" inputmode="numeric"
           style="width:80px;padding:8px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.15);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit"
           onchange="setLapLength('${g.id}', this.value)">
         <span style="font-size:14px;color:var(--text-dim)">m</span>
@@ -729,7 +729,7 @@ function renderGroupBody(g) {
         <button class="dist-btn ${isCustom ? 'active' : ''}" onclick="setRaceDistance('${g.id}', 'custom')">其他</button>
       </div>
       ${isCustom ? `<div class="dist-custom-row">
-        <input type="number" id="custdist-${g.id}" value="${g.raceDistance}" inputmode="numeric" placeholder="輸入距離"
+        <input type="number" id="custdist-${g.id}" value="${g.raceDistance || ''}" inputmode="numeric" placeholder="輸入距離"
           onchange="setCustomDistance('${g.id}', this.value)">
         <span style="font-size:14px;color:var(--text-dim)">m</span>
       </div>` : ''}
