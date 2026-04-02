@@ -442,15 +442,20 @@
   #race-screen .sprint-bar .sprint-info { display: none; }
   #race-screen .round-picks { padding: 4px 12px; min-height: 30px; }
   /* Compact athlete cards when inside the race grid */
-  .race-list .athlete-card { padding: 2px 8px; gap: 5px; border-radius: 7px; }
-  .race-list .rank { font-size: clamp(10px, calc(38cqh / var(--row-count, 13)), 22px); min-width: clamp(14px, calc(38cqh / var(--row-count, 13)), 22px); }
-  .race-list .rank.top1 { font-size: clamp(11px, calc(42cqh / var(--row-count, 13)), 24px); }
-  .race-list .rank.top2, .race-list .rank.top3 { font-size: clamp(10px, calc(40cqh / var(--row-count, 13)), 22px); }
+  .race-list .athlete-card { padding: 2px 8px; gap: 6px; border-radius: 7px; align-items: center; }
+  .race-list .rank { font-size: clamp(10px, calc(38cqh / var(--row-count, 13)), 24px); min-width: clamp(14px, calc(38cqh / var(--row-count, 13)), 24px); line-height: 1; }
+  .race-list .rank.top1 { font-size: clamp(11px, calc(42cqh / var(--row-count, 13)), 26px); }
+  .race-list .rank.top2, .race-list .rank.top3 { font-size: clamp(10px, calc(40cqh / var(--row-count, 13)), 25px); }
   .race-list .rank-change { display: none; }
-  .race-list .athlete-info .bib { font-size: clamp(11px, calc(55cqh / var(--row-count, 13)), 30px); padding: 2px 5px; border-radius: 5px; }
-  .race-list .athlete-info .name { font-size: clamp(11px, calc(55cqh / var(--row-count, 13)), 30px); }
-  .race-list .score { font-size: clamp(13px, calc(65cqh / var(--row-count, 13)), 36px); min-width: 26px; }
-  .race-list .score-unit { font-size: clamp(8px, calc(28cqh / var(--row-count, 13)), 14px); }
+  /* two-line athlete-info: bib on top, name below */
+  .race-list .athlete-info { display: flex; flex-direction: column; justify-content: center; gap: 0; }
+  .race-list .athlete-info .bib-line { display: flex; align-items: center; gap: 4px; line-height: 1; }
+  .race-list .athlete-info .name-line { line-height: 1; }
+  .race-list .athlete-info .bib { font-size: clamp(12px, calc(55cqh / var(--row-count, 13)), 40px); font-weight: 800; background: none; padding: 0; border-radius: 0; letter-spacing: 0.5px; }
+  .race-list .athlete-card.starred .star-icon { font-size: clamp(9px, calc(35cqh / var(--row-count, 13)), 20px); }
+  .race-list .athlete-info .name { font-size: clamp(10px, calc(35cqh / var(--row-count, 13)), 26px); white-space: normal; overflow: visible; text-overflow: unset; font-weight: 600; }
+  .race-list .score { font-size: clamp(13px, calc(65cqh / var(--row-count, 13)), 38px); min-width: 26px; line-height: 1; }
+  .race-list .score-unit { font-size: clamp(8px, calc(24cqh / var(--row-count, 13)), 14px); }
 </style>
   <script data-goatcounter="https://munrochiang.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
@@ -1150,13 +1155,12 @@ function renderRaceCards(rankChanges) {
     <div class="athlete-card ${a.starred ? 'starred' : ''} ${pickedBibs.has(a.bib) ? 'picked' : ''}"
          data-bib="${a.bib}" onclick="onTapAthlete('${a.bib}')">
       <div class="rank ${rc}">${displayRank}</div>
-      <div class="rank-change ${chCls}">${chTxt}</div>
       <div class="athlete-info">
-        <div class="top-line">
+        <div class="bib-line">
           ${a.starred ? '<span class="star-icon">★</span>' : ''}
           <span class="bib">${a.bib}</span>
-          <span class="name">${esc(a.name)}</span>
         </div>
+        <div class="name-line"><span class="name">${esc(a.name)}</span></div>
       </div>
       <div class="score">${a.score}<span class="score-unit">分</span></div>
     </div>`;
