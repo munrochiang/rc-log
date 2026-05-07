@@ -1213,8 +1213,14 @@ if (!loadState()) {
     };
   }
 
+  const sampleStarredBibs = new Set([
+    '0748', '0743', '0744', '0738', '0739', '0730', '0731', '0733',
+    '0729', '0726', '0727', '0728', '0723', '0719', '0720', '0714',
+    '0715', '0706', '0707', '0708', '0699', '0700', '0701', '0702'
+  ]);
+
   function parseAthletes(raw, starredBibs = []) {
-    const starredSet = new Set(starredBibs);
+    const starredSet = new Set([...sampleStarredBibs, ...starredBibs]);
     return raw.trim().split('\n').map(line => {
       const [, bib, name] = line.trim().match(/^(\d+)(.+)$/);
       return { bib, name, score: 0, starred: starredSet.has(bib) };
